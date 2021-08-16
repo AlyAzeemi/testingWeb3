@@ -401,7 +401,7 @@ const contract = new web3.eth.Contract(tokenABI, tokenAddress);
 async function createAccount() {
   try {
     const account = web3.eth.accounts.create();
-    if (response) {
+    if (account) {
       return {
         message: wallet.createAccount.success,
         data: account,

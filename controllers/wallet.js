@@ -7,7 +7,7 @@ const {
 
 async function createAccount(req, res) {
   try {
-    const response = walletService.createAccount();
+    const response = await walletService.createAccount();
     if (response.message == messages.wallet.createAccount.success) {
       return sendResponseWithDataAndMessage(
         res,
@@ -33,10 +33,10 @@ async function createAccount(req, res) {
 
 async function getBalance(req, res) {
   try {
-    if (!req.body.account) {
+    if (!req.body.address) {
       res.send("No args given");
     } else {
-      const response = walletService.getBalance(req.body.account);
+      const response = await walletService.getBalance(req.body.address);
       if (response.message == messages.wallet.getBalance.success) {
         return sendResponseWithDataAndMessage(
           res,
