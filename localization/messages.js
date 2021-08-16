@@ -1,5 +1,9 @@
 module.exports = {
   wallet: {
+    createAccount: {
+      success: "Account successfully created",
+      failure: "Unable to create account",
+    },
     getBalance: {
       success: "Success",
       failure:

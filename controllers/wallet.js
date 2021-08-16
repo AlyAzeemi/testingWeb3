@@ -5,21 +5,63 @@ const {
   errorResponse,
 } = require("../methods/response");
 
-export async function createAccount(req, res) {
-  const account = web3.eth.accounts.create();
-  res.json(account);
-}
-
-export async function getBalance(req, res) {
-  if (!req.body.account) {
-    res.send("No args given");
-  } else {
-    const resp = walletService.getBalance(req.body.account);
-    res.json(resp);
+async function createAccount(req, res) {
+  try {
+    const response = walletService.createAccount();
+    if (response.message == messages.wallet.createAccount.success) {
+      return sendResponseWithDataAndMessage(
+        res,
+        true,
+        response.message,
+        response.data,
+        200
+      );
+    } else if (response.message == messages.wallet.createAccount.failure) {
+      return sendResponseWithDataAndMessage(
+        res,
+        false,
+        response.message,
+        response.data,
+        400
+      );
+    }
+  } catch (e) {
+    console.log(e);
+    return errorResponse(res, "Internal Server Error", 500);
   }
 }
 
-export async function transfer(req, res) {
+async function getBalance(req, res) {
+  try {
+    if (!req.body.account) {
+      res.send("No args given");
+    } else {
+      const response = walletService.getBalance(req.body.account);
+      if (response.message == messages.wallet.getBalance.success) {
+        return sendResponseWithDataAndMessage(
+          res,
+          true,
+          response.message,
+          response.data,
+          200
+        );
+      } else if (response.message == messages.wallet.getBalance.failure) {
+        return sendResponseWithDataAndMessage(
+          res,
+          false,
+          response.message,
+          response.data,
+          400
+        );
+      }
+    }
+  } catch (e) {
+    console.log(e);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
+}
+
+async function transfer(req, res) {
   try {
     const to = req.body.to;
     const from = req.body.from;
@@ -50,7 +92,7 @@ export async function transfer(req, res) {
   }
 }
 
-export async function getTransaction(req, res) {
+async function getTransaction(req, res) {
   try {
     const txHash = req.body.txHash;
     if (!txHash) {
@@ -82,7 +124,7 @@ export async function getTransaction(req, res) {
   }
 }
 
-export async function getTokenName(req, res) {
+async function getTokenName(req, res) {
   try {
     const response = await walletService.getTokenName();
     if (response.message == messages.wallet.getTokenName.success) {
@@ -109,7 +151,7 @@ export async function getTokenName(req, res) {
   }
 }
 
-export async function getTokenSymbol(req, res) {
+async function getTokenSymbol(req, res) {
   try {
     const response = await walletService.getTokenSymbol();
     if (response.message == messages.wallet.getTokenSymbol.success) {
@@ -136,7 +178,7 @@ export async function getTokenSymbol(req, res) {
   }
 }
 
-export async function getTokenSupply(req, res) {
+async function getTokenSupply(req, res) {
   try {
     const response = await walletService.getTokenSupply();
     if (response.message == messages.wallet.getTokenSupply.success) {
@@ -162,3 +204,44 @@ export async function getTokenSupply(req, res) {
     return errorResponse(res, "Internal server error", 500);
   }
 }
+
+async function getTokenBalance(req, res) {
+  try {
+    if (!req.body.address) {
+      return "No address given";
+    }
+    const response = await walletService.getTokenBalance(req.body.address);
+    if (response.message == messages.wallet.getTokenBalance.success) {
+      return sendResponseWithDataAndMessage(
+        res,
+        true,
+        response.message,
+        response.data,
+        200
+      );
+    }
+    if (response == messages.wallet.getTokenBalance.failure) {
+      return sendResponseWithDataAndMessage(
+        res,
+        false,
+        response.message,
+        response.data,
+        400
+      );
+    }
+  } catch (e) {
+    console.log(e);
+    return errorResponse(res, "Internal server error", 500);
+  }
+}
+
+module.exports = {
+  createAccount,
+  getBalance,
+  transfer,
+  getTransaction,
+  getTokenName,
+  getTokenSymbol,
+  getTokenSupply,
+  getTokenBalance,
+};

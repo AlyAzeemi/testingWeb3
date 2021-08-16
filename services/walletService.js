@@ -2,8 +2,9 @@ const Web3 = require("web3");
 const web3 = new Web3(
   "https://ropsten.infura.io/v3/ee4038b62e4e49dbbf5b24a9cb22ffb6"
 );
-const Tx = require("ethereumjs-tx").Transaction;
-const messages = require("../localization/messages");
+const { Transaction } = require("ethereumjs-tx");
+const Tx = Transaction;
+const { wallet } = require("../localization/messages");
 const tokenABI = [
   {
     constant: true,
@@ -397,19 +398,37 @@ const tokenABI = [
 const tokenAddress = "0x45e9ef8800925FA2c5E7888375623661Ef19DD5c";
 const contract = new web3.eth.Contract(tokenABI, tokenAddress);
 
+async function createAccount() {
+  try {
+    const account = web3.eth.accounts.create();
+    if (response) {
+      return {
+        message: wallet.createAccount.success,
+        data: account,
+      };
+    }
+  } catch (e) {
+    console.log(e);
+    return {
+      message: wallet.createAccount.failure,
+      data: null,
+    };
+  }
+}
+
 async function getBalance(address) {
   try {
     const response = await web3.eth.getBalance(address);
     if (response) {
       return {
-        message: messages.wallet.getBalance.success,
+        message: wallet.getBalance.success,
         data: response,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: messages.wallet.getBalance.failure,
+      message: wallet.getBalance.failure,
       data: null,
     };
   }
@@ -439,22 +458,22 @@ async function transfer(from, to, privKey, amount) {
     //Send
     const response = await web3.eth.sendSignedTransaction(raw);
     if (response) {
-      return { message: messages.wallet.transfer.success, data: response };
+      return { message: wallet.transfer.success, data: response };
     }
   } catch (e) {
     console.log(`Error during wallet.transfer: ${e}`);
-    return { message: messages.wallet.transfer.failure, data: null };
+    return { message: wallet.transfer.failure, data: null };
   }
 }
 async function getTransaction(txHash) {
   try {
     const tx = await web3.eth.getTransaction(txHash);
     if (tx) {
-      return { message: messages.wallet.getTransaction.success, data: tx };
+      return { message: wallet.getTransaction.success, data: tx };
     }
   } catch (e) {
     console.log(e);
-    return { message: messages.wallet.getTransaction.failure, data: null };
+    return { message: wallet.getTransaction.failure, data: null };
   }
 }
 
@@ -463,14 +482,14 @@ async function getTokenName() {
     const contractName = await contract.methods.name().call();
     if (contractName) {
       return {
-        message: messages.wallet.getTokenName.success,
+        message: wallet.getTokenName.success,
         data: contractName,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: messages.wallet.getTokenName.failure,
+      message: wallet.getTokenName.failure,
       data: null,
     };
   }
@@ -480,14 +499,14 @@ async function getTokenSymbol() {
     const contractSymbol = await contract.methods.symbol().call();
     if (contractSymbol) {
       return {
-        message: messages.wallet.getTokenSymbol.success,
+        message: wallet.getTokenSymbol.success,
         data: contractSymbol,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: messages.wallet.getTokenSymbol.failure,
+      message: wallet.getTokenSymbol.failure,
       data: null,
     };
   }
@@ -497,14 +516,14 @@ async function getTokenSupply() {
     const contractSupply = await contract.methods.totalSupply().call();
     if (contractSupply) {
       return {
-        message: messages.wallet.getTokenSupply.success,
+        message: wallet.getTokenSupply.success,
         data: contractSupply,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: messages.wallet.getTokenSupply.failure,
+      message: wallet.getTokenSupply.failure,
       data: null,
     };
   }
@@ -516,14 +535,14 @@ async function getTokenBalance(address) {
     console.log(contractBalance);
     if (contractBalance) {
       return {
-        message: messages.wallet.getTokenBalance.success,
+        message: wallet.getTokenBalance.success,
         data: contractBalance,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: messages.wallet.getTokenBalance.failure,
+      message: wallet.getTokenBalance.failure,
       data: null,
     };
   }
@@ -536,6 +555,7 @@ async function test() {
 }
 
 module.exports = {
+  createAccount,
   transfer,
   getBalance,
   getTransaction,
