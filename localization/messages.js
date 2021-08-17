@@ -14,6 +14,11 @@ module.exports = {
       failure:
         "Transfer Failed, either addresses are invalid or not enough gas.",
     },
+    transferTokens: {
+      success: "Transfer successful",
+      failure:
+        "Transfer Failed, either addresses or contract are invalid or there's not enough gas.",
+    },
     getTransaction: {
       success: "Transaction received.",
       failure: "Transaction doesn't exist.",

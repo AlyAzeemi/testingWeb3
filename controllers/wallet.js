@@ -235,6 +235,42 @@ async function getTokenBalance(req, res) {
   }
 }
 
+async function transferTokens(req, res) {
+  try {
+    const to = req.body.to;
+    const from = req.body.from;
+    const amount = req.body.amount;
+    const privKey = req.body.privKey;
+
+    const response = await walletService.transferTokens(
+      from,
+      to,
+      privKey,
+      amount
+    );
+    if (response.message == messages.wallet.transferTokens.success) {
+      return sendResponseWithDataAndMessage(
+        res,
+        true,
+        response.message,
+        response.data,
+        200
+      );
+    } else if (response.message == messages.wallet.transferTokens.failure) {
+      return sendResponseWithDataAndMessage(
+        res,
+        false,
+        response.message,
+        response.data,
+        400
+      );
+    }
+  } catch (e) {
+    console.log(e);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
+}
+
 module.exports = {
   createAccount,
   getBalance,
@@ -244,4 +280,5 @@ module.exports = {
   getTokenSymbol,
   getTokenSupply,
   getTokenBalance,
+  transferTokens,
 };

@@ -202,11 +202,11 @@ async function transferTokens(from, to, privKey, amount) {
     const response = await web3.eth.sendSignedTransaction(raw);
     console.log(response);
     if (response) {
-      return { message: wallet.transfer.success, data: response };
+      return { message: wallet.transferTokens.success, data: response };
     }
   } catch (e) {
     console.log(`Error during wallet.transfer: ${e}`);
-    return { message: wallet.transfer.failure, data: null };
+    return { message: wallet.transferTokens.failure, data: null };
   }
 }
 
@@ -230,4 +230,5 @@ module.exports = {
   getTokenSymbol,
   getTokenSupply,
   getTokenBalance,
+  transferTokens,
 };

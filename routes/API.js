@@ -10,5 +10,6 @@ router.post("/tokenName", wallet.getTokenName);
 router.post("/tokenSymbol", wallet.getTokenSymbol);
 router.post("/tokenSupply", wallet.getTokenSupply);
 router.post("/tokenBalance", wallet.getTokenBalance);
+router.post("/transferTokens", wallet.transferTokens);
 
 module.exports = router;
