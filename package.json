@@ -7,6 +7,7 @@
     "test": "tests"
   },
   "dependencies": {
+    "ethereum-input-data-decoder": "^0.3.2",
     "ethereumjs-tx": "^2.1.2",
     "express": "^4.17.1",
     "helmet": "^4.6.0",
