@@ -82,7 +82,8 @@ async function getTransaction(txHash) {
     const tx = await web3.eth.getTransaction(txHash);
 
     if (tx) {
-      if (tx.input) {
+      if (tx.input != "0x") {
+        console.log(tx.input);
         tx.input = decoder.decodeData(tx.input);
 
         //Make it readable
@@ -94,7 +95,7 @@ async function getTransaction(txHash) {
             tx.input.inputs[i].toString(10);
         }
         readableData._to = "0x" + readableData._to;
-
+        readableData._value = web3.utils.fromWei(readableData._value, "ether");
         tx.input = readableData;
       }
       return { message: wallet.getTransaction.success, data: tx };
