@@ -82,8 +82,7 @@ async function getTransaction(txHash) {
     const tx = await web3.eth.getTransaction(txHash);
 
     if (tx) {
-      if (tx.input != "0x") {
-        console.log(tx.input);
+      if (tx.input !== "0x") {
         tx.input = decoder.decodeData(tx.input);
 
         //Make it readable
