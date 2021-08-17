@@ -82,18 +82,21 @@ async function getTransaction(txHash) {
     const tx = await web3.eth.getTransaction(txHash);
 
     if (tx) {
-      tx.input = decoder.decodeData(tx.input);
+      if (tx.input) {
+        tx.input = decoder.decodeData(tx.input);
 
-      //Make it readable
-      const readableData = {
-        method: tx.input.method,
-      };
-      for (let i = 0; i < 2; i++) {
-        readableData[`${tx.input.names[i]}`] = tx.input.inputs[i].toString(10);
+        //Make it readable
+        const readableData = {
+          method: tx.input.method,
+        };
+        for (let i = 0; i < 2; i++) {
+          readableData[`${tx.input.names[i]}`] =
+            tx.input.inputs[i].toString(10);
+        }
+        readableData._to = "0x" + readableData._to;
+
+        tx.input = readableData;
       }
-      readableData._to = "0x" + readableData._to;
-
-      tx.input = readableData;
       return { message: wallet.getTransaction.success, data: tx };
     }
   } catch (e) {
