@@ -1,28 +1,117 @@
+//-----------------------------------------------------------IMPORTS----------------------------------------------------------
 const Web3 = require("web3");
 const web3 = new Web3(
   "https://ropsten.infura.io/v3/ee4038b62e4e49dbbf5b24a9cb22ffb6"
 );
 const { Transaction } = require("ethereumjs-tx");
 const Tx = Transaction;
-const { wallet } = require("../localization/messages");
+const messages = require("../localization/messages");
 const { tokenABI, tokenAddress } = require("./token");
 const InputDataDecoder = require("ethereum-input-data-decoder");
 const decoder = new InputDataDecoder(tokenABI);
 const contract = new web3.eth.Contract(tokenABI, tokenAddress);
+const mongoose = require("mongoose");
+const { accounts, mongoPass } = require("../secrets.json");
+const walletSchema = require("../models/walletSchema");
+const userSchema = require("../../Playground/models/user-schema");
+const mongoPath = `mongodb+srv://aly:${mongoPass}@cluster0.fwdpv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+//-------------------------------------------------Initialize Dependencies--------------------------------------------------
+mongoose
+  .connect(mongoPath, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("Connected to MongoDB");
+    test();
+  })
+  .catch((e) => {
+    console.log(`Error connecting to MongoDB: ${e}`);
+  });
+const fs = require("fs");
+const wordFile = fs.readFileSync("../localization/words_alpha.txt", {
+  encoding: "utf8",
+  flag: "r",
+});
+const dictionary = wordFile.split("\r\n");
+fs.close(wordFile);
+//-------------------------------------------------------Wallet Management----------------------------------
+async function createWallet(password) {
+  try {
+    const userWallet = web3.eth.accounts.wallet.create(1);
+    const wordList = await createWordList();
+    let uw = new walletSchema({
+      password,
+      wordList,
+      wallet: userWallet.encrypt(password),
+    });
+    await uw.save();
+    return {
+      message: messages.wallet.createWallet.success,
+      data: [userWallet, wordList],
+    };
+  } catch (e) {
+    console.log(e);
+    return { message: messages.wallet.createWallet.failure, data: null };
+  }
+}
 
-async function createAccount() {
+async function createWordList() {
+  try {
+    let unique = false;
+    let wordList = [];
+    while (!unique) {
+      for (let i = 0; i < 6; i++) {
+        let randWord =
+          dictionary[Math.floor(Math.random() * dictionary.length)];
+        wordList.push(randWord);
+      }
+      const res = await walletSchema.findOne({ wordList: wordList });
+      if (res) {
+        console.log("wordList already exists in DB.\n Regenerating list...");
+      } else {
+        unique = true;
+        console.log("Unique wordList generated.");
+      }
+    }
+    return wordList;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function retrieveWallet(wordList, newPassword) {
+  try {
+    const res = await walletSchema.findOne({ wordList: wordList });
+    if (res) {
+      const wallet = web3.eth.accounts.wallet.decrypt(res.wallet, res.password);
+      res.password = newPassword;
+      res.wallet = wallet.encrypt(newPassword);
+      return { message: messages.wallet.retrieveWallet.success, data: wallet };
+    } else {
+      return { message: messages.wallet.retrieveWallet.failure, data: null };
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+//--------------------------------------------Wallet Operation Functions--------------------------------------------
+async function createAccount(userWallet) {
   try {
     const account = web3.eth.accounts.create();
+    userWallet.add(account);
+    await walletSchema.findOne({ wallet: userWallet.encrypt("secretKey") });
     if (account) {
       return {
-        message: wallet.createAccount.success,
+        message: messages.wallet.createAccount.success,
         data: account,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: wallet.createAccount.failure,
+      message: messages.wallet.createAccount.failure,
       data: null,
     };
   }
@@ -33,14 +122,14 @@ async function getBalance(address) {
     const response = await web3.eth.getBalance(address);
     if (response) {
       return {
-        message: wallet.getBalance.success,
+        message: messages.wallet.getBalance.success,
         data: response,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: wallet.getBalance.failure,
+      message: messages.wallet.getBalance.failure,
       data: null,
     };
   }
@@ -70,11 +159,11 @@ async function transfer(from, to, privKey, amount) {
     //Send
     const response = await web3.eth.sendSignedTransaction(raw);
     if (response) {
-      return { message: wallet.transfer.success, data: response };
+      return { message: messages.wallet.transfer.success, data: response };
     }
   } catch (e) {
     console.log(`Error during wallet.transfer: ${e}`);
-    return { message: wallet.transfer.failure, data: null };
+    return { message: messages.wallet.transfer.failure, data: null };
   }
 }
 async function getTransaction(txHash) {
@@ -97,11 +186,11 @@ async function getTransaction(txHash) {
         readableData._value = web3.utils.fromWei(readableData._value, "ether");
         tx.input = readableData;
       }
-      return { message: wallet.getTransaction.success, data: tx };
+      return { message: messages.wallet.getTransaction.success, data: tx };
     }
   } catch (e) {
     console.log(e);
-    return { message: wallet.getTransaction.failure, data: null };
+    return { message: messages.wallet.getTransaction.failure, data: null };
   }
 }
 
@@ -110,14 +199,14 @@ async function getTokenName() {
     const contractName = await contract.methods.name().call();
     if (contractName) {
       return {
-        message: wallet.getTokenName.success,
+        message: messages.wallet.getTokenName.success,
         data: contractName,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: wallet.getTokenName.failure,
+      message: messages.wallet.getTokenName.failure,
       data: null,
     };
   }
@@ -127,14 +216,14 @@ async function getTokenSymbol() {
     const contractSymbol = await contract.methods.symbol().call();
     if (contractSymbol) {
       return {
-        message: wallet.getTokenSymbol.success,
+        message: messages.wallet.getTokenSymbol.success,
         data: contractSymbol,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: wallet.getTokenSymbol.failure,
+      message: messages.wallet.getTokenSymbol.failure,
       data: null,
     };
   }
@@ -144,14 +233,14 @@ async function getTokenSupply() {
     const contractSupply = await contract.methods.totalSupply().call();
     if (contractSupply) {
       return {
-        message: wallet.getTokenSupply.success,
+        message: messages.wallet.getTokenSupply.success,
         data: contractSupply,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: wallet.getTokenSupply.failure,
+      message: messages.wallet.getTokenSupply.failure,
       data: null,
     };
   }
@@ -163,14 +252,14 @@ async function getTokenBalance(address) {
     console.log(contractBalance);
     if (contractBalance) {
       return {
-        message: wallet.getTokenBalance.success,
+        message: messages.wallet.getTokenBalance.success,
         data: contractBalance,
       };
     }
   } catch (e) {
     console.log(e);
     return {
-      message: wallet.getTokenBalance.failure,
+      message: messages.wallet.getTokenBalance.failure,
       data: null,
     };
   }
@@ -205,23 +294,27 @@ async function transferTokens(from, to, privKey, amount) {
     const response = await web3.eth.sendSignedTransaction(raw);
     console.log(response);
     if (response) {
-      return { message: wallet.transferTokens.success, data: response };
+      return {
+        message: messages.wallet.transferTokens.success,
+        data: response,
+      };
     }
   } catch (e) {
     console.log(`Error during wallet.transfer: ${e}`);
-    return { message: wallet.transferTokens.failure, data: null };
+    return { message: messages.wallet.transferTokens.failure, data: null };
   }
 }
 
 async function test() {
   //MyWallets
-  const { accounts } = require("../secrets.json");
-  await transferTokens(
-    accounts[0].address,
-    accounts[1].address,
-    accounts[0].private_key,
-    "3"
-  );
+  await retrieveWallet([
+    "demihagbut",
+    "animator",
+    "outdodged",
+    "towelry",
+    "iddhi",
+    "cordial",
+  ]);
 }
 
 module.exports = {

@@ -7,10 +7,12 @@
     "test": "tests"
   },
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "ethereum-input-data-decoder": "^0.3.2",
     "ethereumjs-tx": "^2.1.2",
     "express": "^4.17.1",
     "helmet": "^4.6.0",
+    "mongoose": "^5.13.7",
     "morgan": "^1.10.0",
     "web3": "^1.5.0"
   },

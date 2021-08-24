@@ -1,5 +1,13 @@
 module.exports = {
   wallet: {
+    createWallet: {
+      success: "Wallet has been created and stored in DB.",
+      failure: "Failed to create wallet.",
+    },
+    retrieveWallet: {
+      success: "The corresponding wallet has been retrieved.",
+      failure: "No wallet associated with this wordList",
+    },
     createAccount: {
       success: "Account successfully created",
       failure: "Unable to create account",

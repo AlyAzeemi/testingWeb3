@@ -5,6 +5,8 @@ const {
   errorResponse,
 } = require("../methods/response");
 
+async function createWallet(req, res) {}
+
 async function createAccount(req, res) {
   try {
     const response = await walletService.createAccount();
