@@ -5,7 +5,67 @@ const {
   errorResponse,
 } = require("../methods/response");
 
-async function createWallet(req, res) {}
+async function createWallet(req, res) {
+  try {
+    if (!req.body.password) {
+      return res.send("No password submitted.");
+    }
+    const response = await walletService.createWallet(req.body.password);
+    if (response.message == messages.wallet.createWallet.success) {
+      return sendResponseWithDataAndMessage(
+        res,
+        true,
+        response.message,
+        response.data,
+        200
+      );
+    } else if (response.message == messages.wallet.createWallet.failure) {
+      return sendResponseWithDataAndMessage(
+        res,
+        false,
+        response.message,
+        response.data,
+        400
+      );
+    }
+  } catch (e) {
+    console.log(e);
+    return errorResponse(res, "Internal Server Error.", 500);
+  }
+}
+
+async function recoverWallet(req, res) {
+  try {
+    if (!req.body.wordList) {
+      return res.send("No wordList submitted.");
+    }
+    if (!req.body.newPassword) {
+      return res.send("No password submitted.");
+    }
+
+    const response = await walletService.recoverWallet(req.body.wordList);
+    if (response.message == messages.wallet.recoverWallet.success) {
+      return sendResponseWithDataAndMessage(
+        res,
+        true,
+        response.message,
+        response.data,
+        200
+      );
+    } else if (response.message == messages.wallet.recoverWallet.failure) {
+      return sendResponseWithDataAndMessage(
+        res,
+        false,
+        response.message,
+        response.data,
+        400
+      );
+    }
+  } catch (e) {
+    console.log(e);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
+}
 
 async function createAccount(req, res) {
   try {
@@ -274,6 +334,8 @@ async function transferTokens(req, res) {
 }
 
 module.exports = {
+  createWallet,
+  recoverWallet,
   createAccount,
   getBalance,
   transfer,

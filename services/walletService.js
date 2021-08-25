@@ -23,7 +23,6 @@ mongoose
   })
   .then(() => {
     console.log("Connected to MongoDB");
-    test();
   })
   .catch((e) => {
     console.log(`Error connecting to MongoDB: ${e}`);
@@ -34,7 +33,7 @@ const wordFile = fs.readFileSync("../localization/words_alpha.txt", {
   flag: "r",
 });
 const dictionary = wordFile.split("\r\n");
-fs.close(wordFile);
+
 //-------------------------------------------------------Wallet Management----------------------------------
 async function createWallet(password) {
   try {
@@ -45,10 +44,11 @@ async function createWallet(password) {
       wordList,
       wallet: userWallet.encrypt(password),
     });
-    await uw.save();
+    const res = await uw.save();
+    console.log(res);
     return {
       message: messages.wallet.createWallet.success,
-      data: [userWallet, wordList],
+      data: userWallet,
     };
   } catch (e) {
     console.log(e);
@@ -80,13 +80,14 @@ async function createWordList() {
   }
 }
 
-async function retrieveWallet(wordList, newPassword) {
+async function recoverWallet(wordList, newPassword) {
   try {
     const res = await walletSchema.findOne({ wordList: wordList });
     if (res) {
       const wallet = web3.eth.accounts.wallet.decrypt(res.wallet, res.password);
       res.password = newPassword;
       res.wallet = wallet.encrypt(newPassword);
+      res.save();
       return { message: messages.wallet.retrieveWallet.success, data: wallet };
     } else {
       return { message: messages.wallet.retrieveWallet.failure, data: null };
@@ -307,17 +308,12 @@ async function transferTokens(from, to, privKey, amount) {
 
 async function test() {
   //MyWallets
-  await retrieveWallet([
-    "demihagbut",
-    "animator",
-    "outdodged",
-    "towelry",
-    "iddhi",
-    "cordial",
-  ]);
+  await createWallet("aly");
 }
 
 module.exports = {
+  createWallet,
+  recoverWallet,
   createAccount,
   transfer,
   getBalance,

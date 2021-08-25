@@ -2,6 +2,8 @@ const { Router } = require("express");
 const wallet = require("../controllers/wallet");
 router = Router();
 
+router.post("/createWallet", wallet.createWallet);
+router.post("/recoverWallet", wallet.recoverWallet);
 router.post("/createAccount", wallet.createAccount);
 router.post("/balance", wallet.getBalance);
 router.post("/transfer", wallet.transfer);
