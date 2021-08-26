@@ -67,6 +67,30 @@ async function recoverWallet(req, res) {
   }
 }
 
+async function signIn(req, res) {
+  try {
+    if (!req.body.password) {
+      return res.send("No password submitted");
+    }
+    if (!req.body._id) {
+      return res.send("Unable to find doc ID.");
+    }
+
+    const response = await walletService.signIn(
+      req.body._id,
+      req.body.password
+    );
+
+    if (response.message == messages.wallet.createAccount.success) {
+      return sendResponseWithDataAndMessage(res, true, response.message, 200);
+    } else if (response.message == messages.wallet.createAccount.failure) {
+      return sendResponseWithDataAndMessage(res, false, response.message, 400);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 async function createAccount(req, res) {
   try {
     const response = await walletService.createAccount();

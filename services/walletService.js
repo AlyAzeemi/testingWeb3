@@ -48,7 +48,7 @@ async function createWallet(password) {
     console.log(res);
     return {
       message: messages.wallet.createWallet.success,
-      data: userWallet,
+      data: { _id: res._id, userWallet },
     };
   } catch (e) {
     console.log(e);
@@ -97,6 +97,22 @@ async function recoverWallet(wordList, newPassword) {
   }
 }
 
+async function signIn(_id, password) {
+  try {
+    res = await walletSchema.findById(_id);
+    if (res) {
+      if (res.password == password) {
+        return { message: messages.wallet.signIn.success };
+      } else {
+        return { message: messages.wallet.signIn.failure };
+      }
+    } else {
+      return { message: messages.wallet.signIn.user_not_found };
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
 //--------------------------------------------Wallet Operation Functions--------------------------------------------
 async function createAccount(userWallet) {
   try {
@@ -312,6 +328,7 @@ async function test() {
 }
 
 module.exports = {
+  signIn,
   createWallet,
   recoverWallet,
   createAccount,

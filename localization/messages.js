@@ -12,6 +12,11 @@ module.exports = {
       success: "Account successfully created",
       failure: "Unable to create account",
     },
+    signIn: {
+      success: "password checks out",
+      user_not_found: "Invalid wallet ID",
+      failure: "password doesn't match.",
+    },
     getBalance: {
       success: "Success",
       failure:
